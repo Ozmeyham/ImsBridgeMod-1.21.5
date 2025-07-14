@@ -19,7 +19,7 @@ public class IMSBridge implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		try {
-			wsClient = new ImsWebSocketClient(new URI("wss://8afba7df5458.ngrok-free.app/"));
+			wsClient = new ImsWebSocketClient(new URI("wss://ims.crabdance.com"));
 			wsClient.connect();
 		} catch (URISyntaxException e) {
 			LOGGER.error("Invalid WebSocket URI", e);
@@ -78,11 +78,25 @@ public class IMSBridge implements ClientModInitializer {
 		@Override
 		public void onClose(int code, String reason, boolean remote) {
 			LOGGER.info("WebSocket Closed: {}", reason);
+			tryReconnecting();
 		}
 
 		@Override
 		public void onError(Exception ex) {
 			LOGGER.error("WebSocket Error", ex);
 		}
+		
+		private void tryReconnecting() {
+            new Thread(() -> {
+                try {
+                    Thread.sleep(3000);
+                    LOGGER.info("Attempting to reconnect...");
+                    this.reconnect();
+                } catch (InterruptedException e) {
+                    LOGGER.error("Reconnect interrupted", e);
+                    Thread.currentThread().interrupt();
+                }
+            }).start();
+        }
 	}
 }
