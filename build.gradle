@@ -1,0 +1,56 @@
+plugins {
+	id 'fabric-loom' version '1.11-SNAPSHOT'
+	id 'maven-publish'
+	id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+base {
+	archivesName = project.archives_base_name
+}
+version = project.mod_version
+group = project.maven_group
+
+configurations {
+	shade
+	implementation.extendsFrom shade
+}
+
+repositories {
+	mavenCentral()
+	maven { url "https://maven.fabricmc.net/" }
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	shade 'org.java-websocket:Java-WebSocket:1.5.4'
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 21
+}
+
+processResources {
+	inputs.property "version", project.version
+
+	filesMatching("fabric.mod.json") {
+		expand "version": project.version
+	}
+}
+
+shadowJar {
+	archiveClassifier.set('dev-shadow')
+	configurations = [project.configurations.shade]
+	relocate 'org.java_websocket', 'ozmeyham.imsbridge.shaded.java_websocket'
+}
+
+tasks.register('remapShadowJar', net.fabricmc.loom.task.RemapJarTask) {
+	dependsOn tasks.shadowJar
+	inputFile.set(shadowJar.archiveFile)
+	archiveClassifier.set('all')
+	addNestedDependencies.set(true)
+}
+
+build.dependsOn tasks.remapShadowJar
