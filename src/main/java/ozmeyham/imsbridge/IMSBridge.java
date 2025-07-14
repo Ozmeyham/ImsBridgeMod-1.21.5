@@ -55,12 +55,16 @@ public class IMSBridge implements ClientModInitializer {
 
 		@Override
 		public void onMessage(String message) {
-			// Expecting JSON {"from":"discord","msg":"the message"}
+			// Expecting JSON {"from":"discord","msg":"Steve: Hi everyone!"}
 			if (message.contains("\"from\":\"discord\"")) {
 				String msg = extractMsg(message);
-				// Display in client chat
+				String[] split = msg.split(": ", 2);
+				String username = split.length > 0 ? split[0] : "";
+				String chatMsg = split.length > 1 ? split[1] : "";
+				String colouredMsg = "§9Bridge > §6" + username + "§f: " + chatMsg;
+				// Send formatted message in client chat
 				MinecraftClient.getInstance().execute(() ->
-						MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(Text.literal("[Discord] " + msg))
+						MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(Text.literal(colouredMsg))
 				);
 			}
 		}
