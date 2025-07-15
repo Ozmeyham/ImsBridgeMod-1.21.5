@@ -45,7 +45,7 @@ public class IMSBridge implements ClientModInitializer {
 
 		if (bridgeKey != null && !bridgeKey.isEmpty() && uuidValidator(bridgeKey)) {
 			connectWebSocket();
-		} else {
+		} else if (bridgeKey == null) {
 			// Wait for the client to fully load before printing
 			ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
 				shouldPrintMessage = true;
@@ -229,7 +229,7 @@ public class IMSBridge implements ClientModInitializer {
                 try {
                     Thread.sleep(3000);
                     LOGGER.info("Attempting to reconnect...");
-					printToChat("§cInvalid bridge key: " + bridgeKey + " §6Attempting to reconnect...");
+					printToChat("§cDisconnected from websocket. §6Attempting to reconnect...");
 					this.reconnect();
                 } catch (InterruptedException e) {
                     LOGGER.error("Reconnect interrupted", e);
