@@ -35,8 +35,8 @@ public class IMSBridge implements ClientModInitializer {
 	private static final String CONFIG_FILE_NAME = "imsbridge.properties";
 	private static final String CONFIG_KEY = "bridge_key";
 
-	private boolean shouldPrintMessage = false;
-	private int ticksUntilMessage = 0;
+	private boolean shouldCheckKey = false;
+	private int delayTicks = 0;
 
 	@Override
 	public void onInitializeClient() {
@@ -45,20 +45,24 @@ public class IMSBridge implements ClientModInitializer {
 
 		if (bridgeKey != null && !bridgeKey.isEmpty() && uuidValidator(bridgeKey)) {
 			connectWebSocket();
-		} else if (bridgeKey == null) {
+		} else {
 			// Wait for the client to fully load before printing
 			ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
-				shouldPrintMessage = true;
-				ticksUntilMessage = 40; // Wait ~2 seconds (20 ticks/sec)
+				shouldCheckKey = true;
+				delayTicks = 40; // Wait ~2 seconds (20 ticks/sec)
 			});
 
 			// Tick handler to delay the message
 			ClientTickEvents.END_CLIENT_TICK.register(client -> {
-				if (shouldPrintMessage && ticksUntilMessage > 0) {
-					ticksUntilMessage--;
-					if (ticksUntilMessage == 0 && client.player != null) {
-						client.player.sendMessage(Text.of("§cBridge key not set. §6Use /bridgekey {key} to connect."), false);
-						shouldPrintMessage = false;
+				if (shouldCheckKey && client.player != null) {
+					if (delayTicks > 0) {
+						delayTicks--;
+					} else {
+						bridgeKey = loadBridgeKey();
+						if (bridgeKey == null || bridgeKey.isEmpty() || !uuidValidator(bridgeKey)) {
+							printToChat("§cBridge key not set. §6Use /bridgekey {key} to connect.");
+						}
+						shouldCheckKey = false;
 					}
 				}
 			});
@@ -161,7 +165,7 @@ public class IMSBridge implements ClientModInitializer {
 	// Simple in-game chat print because the command is so long for some reason
 	public static void printToChat(String msg) {
 		MinecraftClient.getInstance().execute(() ->
-				MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(Text.literal(msg))
+				MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(Text.literal("§6[IMS-Bridge] " + msg))
 		);
 	}
 
@@ -196,7 +200,9 @@ public class IMSBridge implements ClientModInitializer {
 				String chatMsg = split.length > 1 ? split[1] : "";
 				String colouredMsg = "§9Bridge > §6" + username + "§f: " + chatMsg;
 				// Send formatted message in client chat
-				printToChat(colouredMsg);
+				MinecraftClient.getInstance().execute(() ->
+						MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(Text.literal(colouredMsg))
+				);
 			}
 		}
 
@@ -214,6 +220,13 @@ public class IMSBridge implements ClientModInitializer {
 		@Override
 		public void onClose(int code, String reason, boolean remote) {
 			LOGGER.info("WebSocket Closed: {}", reason);
+
+			if ("Invalid bridge key".equals(reason)) {
+				printToChat("§cConnection failed: Invalid bridge key. §6Use /bridgekey {key} to try again.");
+				LOGGER.warn("Not reconnecting due to invalid key.");
+				return; // Don't attempt to reconnect
+			}
+
 			if (bridgeKey != null) {
 				tryReconnecting();
 			}
