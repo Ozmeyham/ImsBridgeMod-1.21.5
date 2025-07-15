@@ -2,8 +2,14 @@ package ozmeyham.imsbridge;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
+import com.mojang.brigadier.Command;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.slf4j.Logger;
@@ -11,18 +17,51 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.io.*;
+import java.nio.file.Path;
+import java.util.Properties;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 
 public class IMSBridge implements ClientModInitializer {
 	private static ImsWebSocketClient wsClient;
 	private static final Logger LOGGER = LoggerFactory.getLogger("imsbridge");
+	private static String bridgeKey = null; //
+
+	private static final String CONFIG_FILE_NAME = "imsbridge.properties";
+	private static final String CONFIG_KEY = "bridge_key";
+
+	private boolean shouldPrintMessage = false;
+	private int ticksUntilMessage = 0;
 
 	@Override
 	public void onInitializeClient() {
-		try {
-			wsClient = new ImsWebSocketClient(new URI("wss://ims.crabdance.com"));
-			wsClient.connect();
-		} catch (URISyntaxException e) {
-			LOGGER.error("Invalid WebSocket URI", e);
+
+		bridgeKey = loadBridgeKey();
+
+		if (bridgeKey != null && !bridgeKey.isEmpty() && uuidValidator(bridgeKey)) {
+			connectWebSocket();
+		} else {
+			// Wait for the client to fully load before printing
+			ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+				shouldPrintMessage = true;
+				ticksUntilMessage = 40; // Wait ~2 seconds (20 ticks/sec)
+			});
+
+			// Tick handler to delay the message
+			ClientTickEvents.END_CLIENT_TICK.register(client -> {
+				if (shouldPrintMessage && ticksUntilMessage > 0) {
+					ticksUntilMessage--;
+					if (ticksUntilMessage == 0 && client.player != null) {
+						client.player.sendMessage(Text.of("§cBridge key not set. §6Use /bridgekey {key} to connect."), false);
+						shouldPrintMessage = false;
+					}
+				}
+			});
 		}
 
 		// Listen for incoming game chat messages (expression lambda)
@@ -30,11 +69,100 @@ public class IMSBridge implements ClientModInitializer {
 			String content = message.getString();
 			if (content.contains("§2Guild >")) {
 				// Send to websocket
-				if (wsClient != null && wsClient.isOpen()) {
+				if (wsClient != null && wsClient.isOpen() && bridgeKey != null) {
 					wsClient.send("{\"from\":\"mc\",\"msg\":" + quote(content) + "}");
 				}
 			}
 		});
+		// Register "/bridgekey key" command
+		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
+			dispatcher.register(LiteralArgumentBuilder.<FabricClientCommandSource>literal("bridgekey")
+					.then(RequiredArgumentBuilder.<FabricClientCommandSource, String>argument("key", StringArgumentType.word())
+							.executes(ctx -> {
+								String key = StringArgumentType.getString(ctx, "key");
+								setBridgeKey(key);
+								LOGGER.info("Bridge key set to " + key);
+								if (uuidValidator(bridgeKey)) {
+									printToChat("§cBridge key saved as: §f" + bridgeKey);
+									connectWebSocket();
+								} else {
+									printToChat("§cInvalid bridge key format! Check you pasted correctly.");
+								}
+								return Command.SINGLE_SUCCESS;
+							})
+					)
+			);
+		});
+	}
+
+	private static void setBridgeKey(String key) {
+		bridgeKey = key;
+		saveBridgeKey(key); // persist change
+	}
+
+	public static boolean uuidValidator(String uuid) {
+		String regex = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$";
+
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(uuid);
+		return matcher.matches();
+	}
+
+	// Config file stuff, needs refactoring
+	private static Path getConfigPath() {
+		return MinecraftClient.getInstance().runDirectory.toPath().resolve("config").resolve(CONFIG_FILE_NAME);
+	}
+
+	private static String loadBridgeKey() {
+		Path path = getConfigPath();
+		Properties props = new Properties();
+		if (path.toFile().exists()) {
+			try (InputStream in = new FileInputStream(path.toFile())) {
+				props.load(in);
+				String value = props.getProperty(CONFIG_KEY);
+				if (value != null && !value.isEmpty()) {
+					LOGGER.info("Loaded bridge key from config.");
+					return value;
+				}
+			} catch (IOException e) {
+				LOGGER.error("Failed to load bridge key from config.", e);
+			}
+		}
+		return null;
+	}
+
+	private static void saveBridgeKey(String key) {
+		Path path = getConfigPath();
+		Properties props = new Properties();
+		props.setProperty(CONFIG_KEY, key);
+		try {
+			File configDir = path.getParent().toFile();
+			if (!configDir.exists()) configDir.mkdirs();
+			try (OutputStream out = new FileOutputStream(path.toFile())) {
+				props.store(out, "IMSBridge configuration");
+				LOGGER.info("Saved bridge key to config.");
+			}
+		} catch (IOException e) {
+			LOGGER.error("Failed to save bridge key to config.", e);
+		}
+	}
+
+	private static void connectWebSocket() {
+		if (wsClient == null || !wsClient.isOpen()) {
+			printToChat("§cConnecting to websocket...");
+			try {
+				wsClient = new ImsWebSocketClient(new URI("wss://ims-bridge.com"));
+				wsClient.connect();
+			} catch (URISyntaxException e) {
+				LOGGER.error("Invalid WebSocket URI", e);
+			}
+		}
+	}
+	// Simple in-game chat print because the command is so long for some reason
+	public static void printToChat(String msg) {
+		MinecraftClient.getInstance().execute(() ->
+				MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(Text.literal(msg))
+		);
 	}
 
 	// Lightweight JSON string escaper
@@ -51,11 +179,16 @@ public class IMSBridge implements ClientModInitializer {
 		@Override
 		public void onOpen(ServerHandshake handshakedata) {
 			LOGGER.info("WebSocket Connected");
+			printToChat("§cSuccessfully connected to websocket.");
+			// Send bridgeKey immediately after connecting
+			if (bridgeKey != null) {
+				wsClient.send("{\"from\":\"mc\",\"key\":" + quote(bridgeKey) + "}");
+			}
 		}
 
 		@Override
 		public void onMessage(String message) {
-			// Expecting JSON {"from":"discord","msg":"Steve: Hi everyone!"}
+			// Expecting JSON {"from":"discord","msg":"Minemon205: Hi chat"}
 			if (message.contains("\"from\":\"discord\"")) {
 				String msg = extractMsg(message);
 				String[] split = msg.split(": ", 2);
@@ -63,9 +196,7 @@ public class IMSBridge implements ClientModInitializer {
 				String chatMsg = split.length > 1 ? split[1] : "";
 				String colouredMsg = "§9Bridge > §6" + username + "§f: " + chatMsg;
 				// Send formatted message in client chat
-				MinecraftClient.getInstance().execute(() ->
-						MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(Text.literal(colouredMsg))
-				);
+				printToChat(colouredMsg);
 			}
 		}
 
@@ -79,10 +210,13 @@ public class IMSBridge implements ClientModInitializer {
 			return json.substring(i, j);
 		}
 
+
 		@Override
 		public void onClose(int code, String reason, boolean remote) {
 			LOGGER.info("WebSocket Closed: {}", reason);
-			tryReconnecting();
+			if (bridgeKey != null) {
+				tryReconnecting();
+			}
 		}
 
 		@Override
@@ -95,7 +229,8 @@ public class IMSBridge implements ClientModInitializer {
                 try {
                     Thread.sleep(3000);
                     LOGGER.info("Attempting to reconnect...");
-                    this.reconnect();
+					printToChat("§cInvalid bridge key: " + bridgeKey + " §6Attempting to reconnect...");
+					this.reconnect();
                 } catch (InterruptedException e) {
                     LOGGER.error("Reconnect interrupted", e);
                     Thread.currentThread().interrupt();
