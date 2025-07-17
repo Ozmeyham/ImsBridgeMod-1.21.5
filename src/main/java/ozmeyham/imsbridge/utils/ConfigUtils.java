@@ -11,6 +11,7 @@ import static com.mojang.text2speech.Narrator.LOGGER;
 
 import static ozmeyham.imsbridge.utils.BridgeKeyUtils.*;
 import static ozmeyham.imsbridge.commands.BridgeColourCommand.*;
+import static ozmeyham.imsbridge.commands.CombinedBridgeColourCommand.*;
 import static ozmeyham.imsbridge.IMSBridge.*;
 
 public class ConfigUtils {
@@ -23,12 +24,16 @@ public class ConfigUtils {
 
     public static void loadConfig() {
         bridgeKey = loadConfigValue("bridgeKey", null);
-        c1 = loadConfigValue("bridge_colour1","§9");
-        c2 = loadConfigValue("bridge_colour2","§6");
-        c3 = loadConfigValue("bridge_colour3","§f");
-        c4 = loadConfigValue("bridge_colour4","§b");
-        combinedbridgeEnabled = Boolean.valueOf(loadConfigValue("combinedbridgeEnabled","false"));
+        bridgeC1 = loadConfigValue("bridge_colour1","§9");
+        bridgeC2 = loadConfigValue("bridge_colour2","§6");
+        bridgeC3 = loadConfigValue("bridge_colour3","§f");
+        cbridgeC1 = loadConfigValue("cbridge_colour1","§4");
+        cbridgeC2 = loadConfigValue("cbridge_colour2","§6");
+        cbridgeC3 = loadConfigValue("cbridge_colour3","§f");
+
+        combinedBridgeEnabled = Boolean.valueOf(loadConfigValue("combinedBridgeEnabled","true"));
         bridgeEnabled = Boolean.valueOf(loadConfigValue("bridgeEnabled","true"));
+        combinedBridgeChatEnabled = Boolean.valueOf(loadConfigValue("combinedBridgeChatEnabled","false"));
     }
 
     public static String loadConfigValue(String CONFIG_KEY, String DEFAULT_VALUE) {
@@ -39,7 +44,7 @@ public class ConfigUtils {
                 props.load(in);
                 String value = props.getProperty(CONFIG_KEY, DEFAULT_VALUE);
                 if (value != null && !value.isEmpty()) {
-                    LOGGER.info("Loaded value from config.");
+                    LOGGER.info("Loaded value from config: " + value);
                     return value;
                 }
             } catch (IOException e) {
@@ -67,7 +72,7 @@ public class ConfigUtils {
             if (!configDir.exists()) configDir.mkdirs();
             try (OutputStream out = new FileOutputStream(path.toFile())) {
                 props.store(out, "IMSBridge configuration");
-                LOGGER.info("Saved value to config.");
+                LOGGER.info("Saved value to config: " + value);
             }
         } catch (IOException e) {
             LOGGER.error("Failed to save value to config.", e);

@@ -16,13 +16,13 @@ public final class BridgeHelpCommand {
         dispatcher.register(LiteralArgumentBuilder.<FabricClientCommandSource>literal("bridge")
                 .then(LiteralArgumentBuilder.<FabricClientCommandSource>literal("help")
                         .executes(ctx -> {
-                            MinecraftClient.getInstance().execute(() ->
-                                    MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(Text.literal(
-                                            "§c/bridgekey <key>: §fSets your bridge key so that you can use the mod.\n" +
-                                            "§c/bridge [enable, disable]: §fEnables/disables client-side bridge message rendering.\n" +
-                                            "§c/bridge colour <colour1> <colour2> <colour3>: §fSets the colour formatting of rendered bridge messages.\n" +
-                                            "§c/bridge colour: §fSets the colour formatting back to default.\n"
-                                    )));
+                            printToChat(
+                                    "\n§c/bridgekey <key>: §fSets your bridge key so that you can use the mod.\n" +
+                                    "§c/bridge toggle: §fEnables/disables client-side bridge message rendering.\n" +
+                                    "§c/bridge colour <colour1> <colour2> <colour3>: §fSets the colour formatting of rendered bridge messages.\n" +
+                                    "§c/bridge colour: §fSets the colour formatting back to default.\n" +
+                                    "§c/bridge help: §fShows this message.\n"
+                            );
                             return Command.SINGLE_SUCCESS;
                         })
                 ));

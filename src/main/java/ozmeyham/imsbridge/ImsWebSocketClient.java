@@ -2,15 +2,21 @@ package ozmeyham.imsbridge;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
+import net.minidev.json.JSONObject;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Map;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static com.mojang.text2speech.Narrator.LOGGER;
 import static ozmeyham.imsbridge.IMSBridge.*;
 import static ozmeyham.imsbridge.commands.BridgeColourCommand.*;
+import static ozmeyham.imsbridge.commands.CombinedBridgeColourCommand.*;
 import static ozmeyham.imsbridge.utils.BridgeKeyUtils.bridgeKey;
 import static ozmeyham.imsbridge.utils.TextUtils.printToChat;
 import static ozmeyham.imsbridge.utils.TextUtils.quote;
@@ -25,7 +31,7 @@ public class ImsWebSocketClient extends WebSocketClient {
 
     public static void connectWebSocket() {
         if (wsClient == null || !wsClient.isOpen()) {
-            printToChat("§cConnecting to websocket...");
+            // printToChat("§cConnecting to websocket...");
             try {
                 wsClient = new ImsWebSocketClient(new URI("wss://ims-bridge.com"));
                 wsClient.connect();
@@ -38,18 +44,14 @@ public class ImsWebSocketClient extends WebSocketClient {
     @Override
     public void onOpen(ServerHandshake handshakedata) {
         LOGGER.info("WebSocket Connected");
-        printToChat("§2Successfully connected to websocket.");
+        // printToChat("§2Successfully connected to websocket.");
         // Send bridgeKey immediately after connecting
         if (bridgeKey != null) {
             wsClient.send("{\"from\":\"mc\",\"key\":" + quote(bridgeKey) + "}");
         }
     }
-    private void bridgeMessage(String message, String bridge) {
-        String msg = extractMsg(message);
-        String[] split = msg.split(": ", 2);
-        String username = split.length > 0 ? split[0] : "";
-        String chatMsg = split.length > 1 ? split[1] : "";
-        String colouredMsg = bridge + c2 + username + ": " + c3 + chatMsg;
+    private void bridgeMessage(String chatMsg, String username, String guild) {
+        String colouredMsg = bridgeC1 + (guild == null ? "Bridge" : guild) + " > " + bridgeC2 + username + ": " + bridgeC3 + chatMsg;
         // Send formatted message in client chat
         if (bridgeEnabled == true) {
             MinecraftClient.getInstance().execute(() ->
@@ -58,25 +60,49 @@ public class ImsWebSocketClient extends WebSocketClient {
         }
     }
 
-    @Override
-    public void onMessage(String message) {
-        if (message.contains("\"combinedchannel\":true") && combinedbridgechatEnabled == true){
-            bridgeMessage(message, c4 + "CBridge > ");
-        } else if (message.contains("\"from\":\"discord\"")){
-            bridgeMessage(message, c1 + "Bridge > ");
+    private void cbridgeMessage(String chatMsg, String username, String guild) {
+        String colouredMsg = cbridgeC1 + "CBridge > " + cbridgeC2 + username + ": " + cbridgeC3 + chatMsg;
+        // Send formatted message in client chat
+        if (combinedBridgeEnabled == true) {
+            MinecraftClient.getInstance().execute(() ->
+                    MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(Text.literal(colouredMsg))
+            );
         }
     }
 
-    // Basic extraction for {"from":"discord","msg":"something"}
-    private String extractMsg(String json) {
-        int i = json.indexOf("\"msg\":\"");
-        if (i == -1) return "";
-        i += 7;
-        int j = json.indexOf("\"", i);
-        if (j == -1) return json.substring(i);
-        return json.substring(i, j);
+    @Override
+    public void onMessage(String message) {
+        //printToChat(message);
+        String msg = getJsonValue(message, "msg");
+        String[] split = msg.split(": ", 2);
+        String username = split.length > 0 ? split[0] : "";
+        String chatMsg = split.length > 1 ? split[1] : "";
+        String guild = GUILD_MAP.get(getJsonValue(message, "guild"));
+
+        if (message.contains("\"combinedbridge\":true")){
+            cbridgeMessage(chatMsg, username, guild);
+        } else if (message.contains("\"from\":\"discord\"")){
+            bridgeMessage(chatMsg, username, guild);
+        }
     }
 
+    public static String getJsonValue(String jsonString, String key) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode node = mapper.readTree(jsonString);
+            JsonNode valueNode = node.get(key);
+            return valueNode != null ? valueNode.asText() : null;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static final Map<String, String> GUILD_MAP = Map.ofEntries(
+            Map.entry("Ironman Sweats", "IMS"),
+            Map.entry("Ironman Casuals", "IMC"),
+            Map.entry("Ironman Academy", "IMA")
+    );
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
@@ -102,7 +128,7 @@ public class ImsWebSocketClient extends WebSocketClient {
             try {
                 Thread.sleep(3000);
                 LOGGER.info("Attempting to reconnect...");
-                printToChat("§4Disconnected from websocket. §6Attempting to reconnect...");
+                // printToChat("§4Disconnected from websocket. §6Attempting to reconnect...");
                 this.reconnect();
             } catch (InterruptedException e) {
                 LOGGER.error("Reconnect interrupted", e);

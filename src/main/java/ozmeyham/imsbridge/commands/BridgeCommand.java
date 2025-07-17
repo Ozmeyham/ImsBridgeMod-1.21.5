@@ -10,32 +10,18 @@ import static ozmeyham.imsbridge.utils.ConfigUtils.saveConfigValue;
 import static ozmeyham.imsbridge.utils.TextUtils.printToChat;
 
 public final class BridgeCommand {
-    public static void bridgeEnableCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
+    public static void bridgeToggleCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         dispatcher.register(LiteralArgumentBuilder.<FabricClientCommandSource>literal("bridge")
-                .then(LiteralArgumentBuilder.<FabricClientCommandSource>literal("enable")
+                .then(LiteralArgumentBuilder.<FabricClientCommandSource>literal("toggle")
                         .executes(ctx -> {
                             if (bridgeEnabled == true) {
-                                printToChat("§2Bridge already enabled! §cDo /bridge disable to disable bridge messages.");
+                                bridgeEnabled = false;
+                                saveConfigValue("bridgeEnabled", "false");
+                                printToChat("§cDisabled bridge messages!");
                             } else {
                                 bridgeEnabled = true;
-                                saveConfigValue("bridgeEnabled","true");
-                                printToChat("§2Bridge messages enabled!");
-                            }
-                            return Command.SINGLE_SUCCESS;
-                        })
-                ));
-    }
-
-    public static void bridgeDisableCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        dispatcher.register(LiteralArgumentBuilder.<FabricClientCommandSource>literal("bridge")
-                .then(LiteralArgumentBuilder.<FabricClientCommandSource>literal("disable")
-                        .executes(ctx -> {
-                            if (bridgeEnabled == false) {
-                                printToChat("§cBridge already disabled! Do /bridge enable to enable bridge messages.");
-                            } else {
-                                bridgeEnabled = false;
-                                saveConfigValue("bridgeEnabled","false");
-                                printToChat("§cBridge messages disabled!");
+                                saveConfigValue("bridgeEnabled", "true");
+                                printToChat("§2Enabled bridge messages!");
                             }
                             return Command.SINGLE_SUCCESS;
                         })
