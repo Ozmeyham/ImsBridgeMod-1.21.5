@@ -15,11 +15,11 @@ public class CombinedBridgeCommand {
                 .then(LiteralArgumentBuilder.<FabricClientCommandSource>literal("enable")
                         .executes(ctx -> {
                             if (combinedbridgeEnabled == true) {
-                                printToChat("§cCombined Bridge already enabled! Do /combinedbridge disable to disable Combined Bridge messages.");
+                                printToChat("§cCombined Bridge already enabled! Do /cbridge disable to disable Combined Bridge messages.");
                             } else {
                                 combinedbridgeEnabled = true;
                                 saveConfigValue("combinedbridgeEnabled","true");
-                                printToChat("§aCombined Bridge messages enabled! §8§i/bc <message | /combinedbridge chat");
+                                printToChat("§aCombined Bridge messages enabled! §8§i/bc <message | /cbridge chat");
                             }
                             return Command.SINGLE_SUCCESS;
                         })
@@ -30,7 +30,7 @@ public class CombinedBridgeCommand {
                 .then(LiteralArgumentBuilder.<FabricClientCommandSource>literal("disable")
                         .executes(ctx -> {
                             if (combinedbridgeEnabled == false) {
-                                printToChat("§cCombined Bridge already disabled! Do /combinedbridge enable to enable Combined Bridge messages.");
+                                printToChat("§cCombined Bridge already disabled! Do /cbridge enable to enable Combined Bridge messages.");
                             } else {
                                 combinedbridgeEnabled = false;
                                 saveConfigValue("combinedbridgeEnabled","true");

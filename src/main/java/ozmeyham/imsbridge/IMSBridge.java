@@ -33,7 +33,7 @@ public class IMSBridge implements ClientModInitializer {
 
 		ClientSendMessageEvents.ALLOW_CHAT.register((message) -> {
 			if (combinedbridgechatEnabled == true && wsClient != null && wsClient.isOpen() && bridgeKey != null) {
-				wsClient.send("{\"from\":\"mc\",\"msg\":" + message + ",\"combinedbridge\":true}");
+				wsClient.send("{\"from\":\"mc\",\"msg\":\"" + message + "\",\"combinedbridge\":true}");
 				return false;
 			} else {
 				return true;

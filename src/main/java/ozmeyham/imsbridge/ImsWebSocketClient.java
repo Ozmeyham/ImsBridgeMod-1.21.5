@@ -60,7 +60,8 @@ public class ImsWebSocketClient extends WebSocketClient {
 
     @Override
     public void onMessage(String message) {
-        if (message.contains("\"combinedchannel\":true") && combinedbridgechatEnabled == true){
+        System.out.println(message);
+        if (message.contains("\"combinedbridge\": true") && combinedbridgeEnabled == true){
             bridgeMessage(message, c4 + "CBridge > ");
         } else if (message.contains("\"from\":\"discord\"")){
             bridgeMessage(message, c1 + "Bridge > ");

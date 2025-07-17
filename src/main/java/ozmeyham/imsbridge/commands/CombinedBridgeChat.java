@@ -16,11 +16,11 @@ public class CombinedBridgeChat {
         dispatcher.register(LiteralArgumentBuilder.<FabricClientCommandSource>literal("bc")
                 .then(argument("message", StringArgumentType.greedyString())
                         .executes(ctx -> {
+                            String message = StringArgumentType.getString(ctx, "message");
                             if (combinedbridgechatEnabled == false) {
-                                printToChat("§cYou have to enable Combined Bridge Chat to use this command! §8§i/combinedbridge enable");
+                                printToChat("§cYou have to enable Combined Bridge Chat to use this command! §8§i/cbridge enable");
                             } else {
-                                wsClient.send("{\"from\":\"mc\",\"msg\":" + ctx + ",\"combinedbridge\":true}");
-
+                                wsClient.send("{\"from\":\"mc\",\"msg\":\"" + message + "\",\"combinedbridge\": true}");
                             }
                             return Command.SINGLE_SUCCESS;
                         })
