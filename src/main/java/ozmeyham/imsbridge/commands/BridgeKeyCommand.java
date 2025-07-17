@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import static ozmeyham.imsbridge.IMSBridge.*;
 import static ozmeyham.imsbridge.ImsWebSocketClient.connectWebSocket;
 import static ozmeyham.imsbridge.utils.BridgeKeyUtils.*;
+import static ozmeyham.imsbridge.utils.ConfigUtils.loadConfig;
 import static ozmeyham.imsbridge.utils.ConfigUtils.saveConfigValue;
 import static ozmeyham.imsbridge.utils.TextUtils.printToChat;
 
@@ -22,6 +23,7 @@ public final class BridgeKeyCommand {
                             bridgeKey = key;
                             if (isValidBridgeKey()) {
                                 saveConfigValue("bridgeKey", bridgeKey);
+                                loadConfig();
                                 LOGGER.info("Bridge key set to " + key);
                                 printToChat("§cBridge key saved as: §f" + bridgeKey);
                                 connectWebSocket();
