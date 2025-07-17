@@ -44,22 +44,26 @@ public class ImsWebSocketClient extends WebSocketClient {
             wsClient.send("{\"from\":\"mc\",\"key\":" + quote(bridgeKey) + "}");
         }
     }
+    private void bridgeMessage(String message, String bridge) {
+        String msg = extractMsg(message);
+        String[] split = msg.split(": ", 2);
+        String username = split.length > 0 ? split[0] : "";
+        String chatMsg = split.length > 1 ? split[1] : "";
+        String colouredMsg = bridge + c2 + username + ": " + c3 + chatMsg;
+        // Send formatted message in client chat
+        if (bridgeEnabled == true) {
+            MinecraftClient.getInstance().execute(() ->
+                    MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(Text.literal(colouredMsg))
+            );
+        }
+    }
 
     @Override
     public void onMessage(String message) {
-        // Expecting JSON {"from":"discord","msg":"Minemon205: Hi chat"}
-        if (message.contains("\"from\":\"discord\"")) {
-            String msg = extractMsg(message);
-            String[] split = msg.split(": ", 2);
-            String username = split.length > 0 ? split[0] : "";
-            String chatMsg = split.length > 1 ? split[1] : "";
-            String colouredMsg = c1 + "Bridge > " + c2 + username + ": " + c3 + chatMsg;
-            // Send formatted message in client chat
-            if (bridgeEnabled == true) {
-                MinecraftClient.getInstance().execute(() ->
-                        MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(Text.literal(colouredMsg))
-                );
-            }
+        if (message.contains("\"combinedchannel\":true") && combinedbridgechatEnabled == true){
+            bridgeMessage(message, c4 + "CBridge > ");
+        } else if (message.contains("\"from\":\"discord\"")){
+            bridgeMessage(message, c1 + "Bridge > ");
         }
     }
 

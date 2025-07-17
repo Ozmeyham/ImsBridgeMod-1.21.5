@@ -26,6 +26,8 @@ public class ConfigUtils {
         c1 = loadConfigValue("bridge_colour1","§9");
         c2 = loadConfigValue("bridge_colour2","§6");
         c3 = loadConfigValue("bridge_colour3","§f");
+        c4 = loadConfigValue("bridge_colour4","§b");
+        combinedbridgeEnabled = Boolean.valueOf(loadConfigValue("combinedbridgeEnabled","false"));
         bridgeEnabled = Boolean.valueOf(loadConfigValue("bridgeEnabled","true"));
     }
 

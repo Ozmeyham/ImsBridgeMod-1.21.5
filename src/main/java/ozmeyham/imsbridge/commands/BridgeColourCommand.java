@@ -27,13 +27,14 @@ public final class BridgeColourCommand {
     public static String c1 = "§9";
     public static String c2 = "§6";
     public static String c3 = "§f";
+    public static String c4 = "§b";
 
 
     public static void bridgeColourCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         dispatcher.register(LiteralArgumentBuilder.<FabricClientCommandSource>literal("bridge")
                 .then(LiteralArgumentBuilder.<FabricClientCommandSource>literal("colour")
                         .executes(context -> {
-                            c1 = "§9"; c2 = "§6"; c3 = "§f";
+                            c1 = "§9"; c2 = "§6"; c3 = "§f"; c4 = "§b";
                             printToChat("§cReset bridge colour format to default.");
                             return 1;
                                 })
@@ -43,10 +44,12 @@ public final class BridgeColourCommand {
                                         .suggests((context, builder) -> CommandSource.suggestMatching(VALID_COLORS, builder))
                                         .then(RequiredArgumentBuilder.<FabricClientCommandSource, String>argument("colour3", StringArgumentType.word())
                                                 .suggests((context, builder) -> CommandSource.suggestMatching(VALID_COLORS, builder))
-                                                .executes(BridgeColourCommand::run)
+                                                .then(RequiredArgumentBuilder.<FabricClientCommandSource, String>argument("colour4", StringArgumentType.word())
+                                                        .suggests((context, builder) -> CommandSource.suggestMatching(VALID_COLORS, builder))
+                                                        .executes(BridgeColourCommand::run).executes(BridgeColourCommand::run)
                                 )
                         )
-
+                                )
                 )
             )
         );
@@ -60,6 +63,7 @@ public final class BridgeColourCommand {
         c1 = COLOR_CODE_MAP.getOrDefault(colour1, "§9");
         c2 = COLOR_CODE_MAP.getOrDefault(colour2, "§6");
         c3 = COLOR_CODE_MAP.getOrDefault(colour3, "§f");
+        c4 = COLOR_CODE_MAP.getOrDefault(colour3, "§b");
 
         saveConfigValue("bridge_colour1", c1);
         saveConfigValue("bridge_colour2", c2);
