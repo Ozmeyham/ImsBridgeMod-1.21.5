@@ -5,6 +5,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 
+import static ozmeyham.imsbridge.IMSBridge.combinedBridgeChatEnabled;
 import static ozmeyham.imsbridge.IMSBridge.combinedBridgeEnabled;
 import static ozmeyham.imsbridge.utils.ConfigUtils.saveConfigValue;
 import static ozmeyham.imsbridge.utils.TextUtils.printToChat;

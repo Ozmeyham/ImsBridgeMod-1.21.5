@@ -18,7 +18,7 @@ public class CombinedBridgeMsgCommand {
                         .executes(ctx -> {
                             String message = StringArgumentType.getString(ctx, "message");
                             if (combinedBridgeEnabled == false) {
-                                printToChat("§cYou have to enable combined bridge to use this command! §6§i/cbridge toggle");
+                                printToChat("§cYou need to enable cbridge messages before using cbridge! §6§oDo /cbridge toggle");
                             } else {
                                 wsClient.send("{\"from\":\"mc\",\"msg\":\"" + message + "\",\"combinedbridge\":true}");
                             }

@@ -19,7 +19,8 @@ import static ozmeyham.imsbridge.commands.CombinedBridgeChatCommand.*;
 import static ozmeyham.imsbridge.commands.CombinedBridgeToggleCommand.*;
 import static ozmeyham.imsbridge.utils.BridgeKeyUtils.*;
 import static ozmeyham.imsbridge.utils.ConfigUtils.loadConfig;
-import static ozmeyham.imsbridge.utils.TextUtils.quote;
+import static ozmeyham.imsbridge.utils.ConfigUtils.saveConfigValue;
+import static ozmeyham.imsbridge.utils.TextUtils.*;
 
 public class IMSBridge implements ClientModInitializer {
 	public static final Logger LOGGER = LoggerFactory.getLogger("imsbridge");
@@ -33,16 +34,20 @@ public class IMSBridge implements ClientModInitializer {
 		loadConfig();
 		checkBridgeKey();
 
-		// Listen for outgoing cbridge chat messages
 		ClientSendMessageEvents.ALLOW_CHAT.register((message) -> {
-			if (combinedBridgeChatEnabled == true && wsClient != null && wsClient.isOpen() && bridgeKey != null && !message.contains("/")) {
-				wsClient.send("{\"from\":\"mc\",\"msg\":\"" + message + "\",\"combinedbridge\":true}");
+			if (combinedBridgeEnabled && combinedBridgeChatEnabled && wsClient != null && wsClient.isOpen() && bridgeKey != null) {
+				if (!message.startsWith("/")) {
+					wsClient.send("{\"from\":\"mc\",\"msg\":\"" + message + "\",\"combinedbridge\":true}");
+					return false;
+				}
+			} else if (combinedBridgeChatEnabled && !combinedBridgeEnabled) {
+				printToChat("§cYou need to enable cbridge messages before using cbridge! §6§oDo /cbridge toggle");
 				return false;
-			} else {
-				return true;
 			}
+			return true;
 		});
-		// Listen for outgoing guild messages
+
+		// Listen for outgoing guild messages and channel changes
 		ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
 			String content = message.getString();
 			if (content.contains("§2Guild >")) {
@@ -50,6 +55,10 @@ public class IMSBridge implements ClientModInitializer {
 				if (wsClient != null && wsClient.isOpen() && bridgeKey != null) {
 					wsClient.send("{\"from\":\"mc\",\"msg\":" + quote(content) + "}");
 				}
+			} else if (isSkyblockChannelChange(content) && combinedBridgeChatEnabled == true) {
+				combinedBridgeChatEnabled = false;
+				saveConfigValue("combinedBridgeChatEnabled", "false");
+				printToChat("§cExited cbridge chat!");
 			}
 		});
 

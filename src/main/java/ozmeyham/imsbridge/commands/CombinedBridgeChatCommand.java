@@ -18,17 +18,13 @@ public class CombinedBridgeChatCommand {
                 .then(LiteralArgumentBuilder.<FabricClientCommandSource>literal("chat")
                         .executes(ctx -> {
                             if (combinedBridgeChatEnabled == false) {
-                                if (combinedBridgeEnabled) {
                                     combinedBridgeChatEnabled = true;
                                     saveConfigValue("combinedBridgeChatEnabled", "true");
-                                    printToChat("§aEnabled combined bridge chat! §e§iThis functions like /chat guild, but for cbridge.");
-                                } else {
-                                    printToChat("§cYou need to enable cbridge messages before using this command! Do /cbridge toggle");
-                                }
+                                    printToChat("§aEntered cbridge chat! §e§oThis functions like /chat guild, but for cbridge.");
                             } else {
                                 combinedBridgeChatEnabled = false;
                                 saveConfigValue("combinedBridgeChatEnabled", "false");
-                                printToChat("§cDisabled Combined Bridge Chat!");
+                                printToChat("§cExited cbridge chat!");
                             }
                             return Command.SINGLE_SUCCESS;
                         })
