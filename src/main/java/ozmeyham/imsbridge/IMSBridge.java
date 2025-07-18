@@ -17,6 +17,7 @@ import static ozmeyham.imsbridge.commands.CombinedBridgeHelpCommand.*;
 import static ozmeyham.imsbridge.commands.CombinedBridgeMsgCommand.*;
 import static ozmeyham.imsbridge.commands.CombinedBridgeChatCommand.*;
 import static ozmeyham.imsbridge.commands.CombinedBridgeToggleCommand.*;
+import static ozmeyham.imsbridge.commands.SuperSuperSuperSecretCommand.superSuperSuperSecretCommand;
 import static ozmeyham.imsbridge.utils.BridgeKeyUtils.*;
 import static ozmeyham.imsbridge.utils.ConfigUtils.loadConfig;
 import static ozmeyham.imsbridge.utils.TextUtils.quote;
@@ -35,7 +36,7 @@ public class IMSBridge implements ClientModInitializer {
 
 		// Listen for outgoing cbridge chat messages
 		ClientSendMessageEvents.ALLOW_CHAT.register((message) -> {
-			if (combinedBridgeChatEnabled == true && wsClient != null && wsClient.isOpen() && bridgeKey != null) {
+			if (combinedBridgeChatEnabled == true && wsClient != null && wsClient.isOpen() && bridgeKey != null && !message.startsWith("/")) {
 				wsClient.send("{\"from\":\"mc\",\"msg\":\"" + message + "\",\"combinedbridge\":true}");
 				return false;
 			} else {
@@ -72,5 +73,7 @@ public class IMSBridge implements ClientModInitializer {
 		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> combinedBridgeColourCommand(dispatcher));
 		// Register "/cbridge help" command to explain cbridge command usage.
 		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> combinedBridgeHelpCommand(dispatcher));
+		// please dont remove this
+		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> superSuperSuperSecretCommand(dispatcher));
 	}
 }
