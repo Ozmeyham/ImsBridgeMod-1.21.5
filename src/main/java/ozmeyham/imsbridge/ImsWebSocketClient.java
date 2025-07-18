@@ -9,6 +9,7 @@ import org.java_websocket.handshake.ServerHandshake;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
+import java.util.Objects;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -60,8 +61,8 @@ public class ImsWebSocketClient extends WebSocketClient {
         }
     }
 
-    private void cbridgeMessage(String chatMsg, String username, String guild) {
-        String colouredMsg = cbridgeC1 + "CBridge > " + cbridgeC2 + username + ": " + cbridgeC3 + chatMsg;
+    private void cbridgeMessage(String chatMsg, String username, String guild, String guildColour) {
+        String colouredMsg = cbridgeC1 + "CBridge > " + cbridgeC2 + username + guildColour + " [" + guild + "]§f: " + cbridgeC3 + chatMsg;
         // Send formatted message in client chat
         if (combinedBridgeEnabled == true) {
             MinecraftClient.getInstance().execute(() ->
@@ -74,13 +75,18 @@ public class ImsWebSocketClient extends WebSocketClient {
     public void onMessage(String message) {
         //printToChat(message);
         String msg = getJsonValue(message, "msg");
+
         String[] split = msg.split(": ", 2);
         String username = split.length > 0 ? split[0] : "";
         String chatMsg = split.length > 1 ? split[1] : "";
         String guild = GUILD_MAP.get(getJsonValue(message, "guild"));
-
+        String guildColour = GUILD_COLOUR_MAP.get(getJsonValue(message, "guild"));
         if (message.contains("\"combinedbridge\":true")){
-            cbridgeMessage(chatMsg, username, guild);
+            if (message.contains("\"from\":\"discord\"")) {
+                guild = "DISC";
+                guildColour = "§9";
+            }
+            cbridgeMessage(chatMsg, username, guild, guildColour);
         } else if (message.contains("\"from\":\"discord\"")){
             bridgeMessage(chatMsg, username, guild);
         }
@@ -102,6 +108,12 @@ public class ImsWebSocketClient extends WebSocketClient {
             Map.entry("Ironman Sweats", "IMS"),
             Map.entry("Ironman Casuals", "IMC"),
             Map.entry("Ironman Academy", "IMA")
+    );
+
+    public static final Map<String, String> GUILD_COLOUR_MAP = Map.ofEntries(
+            Map.entry("Ironman Sweats", "§a"),
+            Map.entry("Ironman Casuals", "§3"),
+            Map.entry("Ironman Academy", "§2")
     );
 
     @Override
