@@ -10,6 +10,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Objects;
+import com.google.gson.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -74,21 +75,50 @@ public class ImsWebSocketClient extends WebSocketClient {
     @Override
     public void onMessage(String message) {
         //printToChat(message);
-        String msg = getJsonValue(message, "msg");
+        if (getJsonValue(message, "response") != null) {
+            handleResponse(message);
+        } else if (getJsonValue(message, "from") != null) {
+            String msg = getJsonValue(message, "msg");
 
-        String[] split = msg.split(": ", 2);
-        String username = split.length > 0 ? split[0] : "";
-        String chatMsg = split.length > 1 ? split[1] : "";
-        String guild = GUILD_MAP.get(getJsonValue(message, "guild"));
-        String guildColour = GUILD_COLOUR_MAP.get(getJsonValue(message, "guild"));
-        if (message.contains("\"combinedbridge\":true")){
-            if (message.contains("\"from\":\"discord\"")) {
-                guild = "DISC";
-                guildColour = "§9";
+            String[] split = msg.split(": ", 2);
+            String username = split.length > 0 ? split[0] : "";
+            String chatMsg = split.length > 1 ? split[1] : "";
+            String guild = GUILD_MAP.get(getJsonValue(message, "guild"));
+            String guildColour = GUILD_COLOUR_MAP.get(getJsonValue(message, "guild"));
+
+            if (message.contains("\"combinedbridge\":true")){
+                if (message.contains("\"from\":\"discord\"")) {
+                    guild = "DISC";
+                    guildColour = "§9";
+                }
+                cbridgeMessage(chatMsg, username, guild, guildColour);
+            } else if (message.contains("\"from\":\"discord\"")){
+                bridgeMessage(chatMsg, username, guild);
             }
-            cbridgeMessage(chatMsg, username, guild, guildColour);
-        } else if (message.contains("\"from\":\"discord\"")){
-            bridgeMessage(chatMsg, username, guild);
+        }
+
+    }
+
+    private void handleResponse(String message) {
+        if (Objects.equals(getJsonValue(message, "request"), "getOnlinePlayers")) {
+            JsonObject root = JsonParser.parseString(message).getAsJsonObject();
+            JsonObject response = root.getAsJsonObject("response");
+            StringBuilder messageBuilder = new StringBuilder("§aOnline Players:\n");
+            for (String guild : response.keySet()) {
+                JsonArray players = response.getAsJsonArray(guild);
+                messageBuilder.append(GUILD_COLOUR_MAP.get(guild)).append(guild).append(": ");
+
+                if (players.isEmpty()) {
+                    messageBuilder.append("§7None\n");
+                } else {
+                    for (int i = 0; i < players.size(); i++) {
+                        messageBuilder.append("§f").append(players.get(i).getAsString());
+                        if (i < players.size() - 1) messageBuilder.append(", ");
+                    }
+                    messageBuilder.append("\n");
+                }
+            }
+            printToChat(messageBuilder.toString());
         }
     }
 
