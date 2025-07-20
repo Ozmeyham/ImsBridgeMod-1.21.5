@@ -20,9 +20,10 @@ public final class CombinedBridgeHelpCommand {
                                     "\n§c/cbridge toggle: §fEnables/disables client-side cbridge message rendering.\n" +
                                         "§c/cbridge colour <colour1> <colour2> <colour3>: §fSets the colour formatting of rendered bridge messages.\n" +
                                         "§c/cbridge colour: §fSets the colour formatting back to default.\n" +
-                                        "§c/cbridge chat: §fEnable/disable sending cbridge messages with no command prefix (like /chat guild)\n" +
+                                        "§c/cbridge chat: §6(alias /cbc) §fEnable/disable sending cbridge messages with no command prefix (like /chat guild)\n" +
                                         "§c/bc <msg>: §fSends msg to cbridge, all other connected players can see this in game.\n" +
-                                        "§c/cbridge help: §fShows this message.\n"
+                                        "§c/cbridge help: §fShows this message.\n" +
+                                        "§c/cbridge online: §6(alias /bl) §fShows a list of connected players using this mod."
                             );
                             return Command.SINGLE_SUCCESS;
                         })

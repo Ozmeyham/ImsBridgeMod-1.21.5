@@ -31,7 +31,7 @@ public class CombinedBridgeChatCommand {
                 ));
     }
     public static void combinedBridgeChatCommandShort(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        dispatcher.register(LiteralArgumentBuilder.<FabricClientCommandSource>literal("cb")
+        dispatcher.register(LiteralArgumentBuilder.<FabricClientCommandSource>literal("cbc")
                         .executes(ctx -> {
                             if (combinedBridgeChatEnabled == false) {
                                 combinedBridgeChatEnabled = true;
