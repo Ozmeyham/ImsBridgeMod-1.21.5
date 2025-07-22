@@ -24,6 +24,8 @@ public class IMSBridge implements ClientModInitializer {
 	public static Boolean combinedBridgeEnabled = false; // enable/disable seeing cbridge messages
 	public static Boolean combinedBridgeChatEnabled = false; // enable/disable sending cbridge messages with no command prefix (like /chat guild)
 	public static Boolean onHypixel = false; // check if on hypixel yk
+	public static Boolean guide = false;
+	public static Boolean checkedforUpdate = false;
 
 	@Override
 	public void onInitializeClient() {
@@ -57,16 +59,19 @@ public class IMSBridge implements ClientModInitializer {
 			}
 		});
 
-		// Check if on Hypixel
+		// Checks when you join a world
 		ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
-			checkBridgeKey();
-			checkForUpdates();
 			ClientConnection connection = handler.getConnection();
 			String address = connection.getAddress().toString().toLowerCase();
 			onHypixel = address.contains("hypixel.net");
-			if (!onHypixel) {
-				printToChat("§cCertain features have been disabled since you aren't on Hypixel.");
+			checkBridgeKey();
+			if (!onHypixel) {printToChat("§cCertain features have been disabled since you aren't on Hypixel.");}
+			if (!guide) {
+				guide = true;
+				saveConfigValue("guide", "true");
+				printToChat("Thank you for installing IMS's Bridge-Mod.\n§bAfter registering your bridge-key, please use /imshelp to get a list of all commands.");
 			}
+			if (!checkedforUpdate) {checkForUpdates();checkedforUpdate=true;}
 		});
 	}
 }

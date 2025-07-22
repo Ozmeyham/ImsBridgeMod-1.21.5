@@ -11,10 +11,10 @@ public class IMSHelpCommand {
     public static void imsHelpCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         dispatcher.register(LiteralArgumentBuilder.<FabricClientCommandSource>literal("imshelp")
                 .executes(ctx -> {
-                    printToChat( "§6§l- IMS Combined Bridge Help +"+
-                            "\n/imsbridge bridge: Shows a list of commands for /bridge."+
-                            "\n/imsbridge cbridge: Shows a list of commands for /cbridge."+
-                            "\n/imsbridge bridgekey: Explains how to setup a bridge-key."
+                    printToChat( "\n§5§l- IMS Combined Bridge Help +"+
+                            "\n§d/imshelp bridge: §fShows a list of commands for /bridge."+
+                            "\n§d/imshelp cbridge: §fShows a list of commands for /cbridge."+
+                            "\n§d/imshelp bridgekey: §fExplains how to setup a bridge-key.\n"
                             );
                     return Command.SINGLE_SUCCESS;
                 })
@@ -22,11 +22,11 @@ public class IMSHelpCommand {
         dispatcher.register(LiteralArgumentBuilder.<FabricClientCommandSource>literal("imshelp")
                 .then(LiteralArgumentBuilder.<FabricClientCommandSource>literal("bridge")
                         .executes(ctx -> {
-                            printToChat("§6§l- IMS Bridge Help +"+"\n§8Note that you have to be logged on Hypixel for these commands to work"+
-                                    "\n§c/bridgekey <key>: §fSets your bridge key so that you can use the mod.\n" +
-                                    "§c/bridge toggle: §fEnables/disables client-side bridge message rendering.\n" +
-                                    "§c/bridge colour <colour1> <colour2> <colour3>: §fSets the colour formatting of rendered bridge messages.\n" +
-                                    "§c/bridge colour: §fSets the colour formatting back to default.\n"
+                            printToChat("\n§9§l- IMS Bridge Help +"+"\n§8§oPlease note that these commands only work on Hypixel."+
+                                    "\n§9/bridgekey <key>: §bSets your bridge key so that you can use the mod.\n" +
+                                    "§9/bridge toggle: §bEnables/disables client-side bridge message rendering.\n" +
+                                    "§9/bridge colour <colour1> <colour2> <colour3>: §bSets the colour formatting of rendered bridge messages.\n" +
+                                    "§9/bridge colour: §bSets the colour formatting back to default.\n"
                             );
                             return Command.SINGLE_SUCCESS;
                         })
@@ -35,13 +35,13 @@ public class IMSHelpCommand {
         dispatcher.register(LiteralArgumentBuilder.<FabricClientCommandSource>literal("imshelp")
                 .then(LiteralArgumentBuilder.<FabricClientCommandSource>literal("cbridge")
                         .executes(ctx -> {
-                            printToChat( "§6§l- IMS Combined Bridge Help +"+
-                                    "\n§c/cbridge toggle: §fEnables/disables client-side cbridge message rendering.\n" +
-                                    "§c/cbridge colour <colour1> <colour2> <colour3>: §fSets the colour formatting of rendered bridge messages.\n" +
-                                    "§c/cbridge colour: §fSets the colour formatting back to default.\n" +
-                                    "§c/cbridge chat: §6(alias /cbc without a message following it) §fEnable/disable sending cbridge messages with no command prefix (like /chat guild)\n" +
-                                    "§c/cbc <msg>: §fSends msg to cbridge, all other connected players can see this in game.\n" +
-                                    "§c/cbridge online: §6(alias /bl) §fShows a list of connected players using this mod."
+                            printToChat( "\n§4§l- IMS Combined Bridge Help +"+
+                                    "\n§4/cbridge toggle: §cEnables/disables client-side cbridge message rendering.\n" +
+                                    "§4/cbridge colour <colour1> <colour2> <colour3>: §cSets the colour formatting of rendered bridge messages.\n" +
+                                    "§4/cbridge colour: §cSets the colour formatting back to default.\n" +
+                                    "§4/cbridge chat: §c(alias /cbc without a message following it) §cEnable/disable sending cbridge messages with no command prefix (like /chat guild)\n" +
+                                    "§4/cbc <msg>: §cSends msg to cbridge, all other connected players can see this in game.\n" +
+                                    "§4/cbridge online: §c(alias /bl) §cShows a list of connected players using this mod.\n"
                             );
                             return Command.SINGLE_SUCCESS;
                         })
@@ -50,11 +50,11 @@ public class IMSHelpCommand {
         dispatcher.register(LiteralArgumentBuilder.<FabricClientCommandSource>literal("imshelp")
                 .then(LiteralArgumentBuilder.<FabricClientCommandSource>literal("bridgekey")
                         .executes(ctx -> {
-                            printToChat( "§6§l- IMS Bridge-Key Help +"+
-                                    "\n§c/bridgekey <key> to set your bridge-key\n" +
-                                    "§cYou can collect your bridge-key by typing /key in the commands channel. You should receive a DM from the IMS-Bridge App\n"+
-                                    "§cCollect your bridge-key from the bot's message, then enter your bridge-key after /bridgekey\n"+
-                                    "§c§lYou need to have your discord account linked to your Hypixel account to collect your bridge-key!\n"
+                            printToChat( "\n§c§l- IMS Bridge-Key Help +"+
+                                    "\n§e/bridgekey <key> to set your bridge-key\n" +
+                                    "§eYou can collect your bridge-key by typing /key in the commands channel. You should receive a DM from the IMS-Bridge App\n"+
+                                    "§eCollect your bridge-key from the bot's message, then enter your bridge-key after /bridgekey\n"+
+                                    "§c§lYou need to have your discord account linked to your Hypixel account to get your bridge-key!\n"
                             );
                             return Command.SINGLE_SUCCESS;
                         })

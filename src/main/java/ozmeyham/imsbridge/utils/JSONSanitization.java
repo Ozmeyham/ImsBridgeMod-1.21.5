@@ -5,4 +5,4 @@ public class JSONSanitization {
         return msg.replace("\"","''").replace("\\","\\\\");
     }
 }
-// that was surprisingly simple lmao
+// that was surprisingly simple to implement lmao
