@@ -1,5 +1,6 @@
 package ozmeyham.imsbridge.commands;
 
+import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import static ozmeyham.imsbridge.utils.ConfigUtils.saveConfigValue;
+import static ozmeyham.imsbridge.utils.HypixelOnly.requireHypixel;
 import static ozmeyham.imsbridge.utils.TextUtils.printToChat;
 
 public final class BridgeColourCommand {
@@ -32,6 +34,7 @@ public final class BridgeColourCommand {
         dispatcher.register(LiteralArgumentBuilder.<FabricClientCommandSource>literal("bridge")
                 .then(LiteralArgumentBuilder.<FabricClientCommandSource>literal("colour")
                         .executes(context -> {
+                            if (!requireHypixel(true)) return Command.SINGLE_SUCCESS;
                             bridgeC1 = "§9"; bridgeC2 = "§6"; bridgeC3 = "§f";
                             printToChat("§cReset bridge colour format to default.");
                             return 1;
@@ -39,6 +42,7 @@ public final class BridgeColourCommand {
                         .then(RequiredArgumentBuilder.<FabricClientCommandSource, String>argument("colour1", StringArgumentType.word())
                                 .suggests((context, builder) -> CommandSource.suggestMatching(VALID_COLORS, builder))
                                 .executes(context -> {
+                                    if (!requireHypixel(true)) return Command.SINGLE_SUCCESS;
                                     bridgeC1 = COLOR_CODE_MAP.getOrDefault(StringArgumentType.getString(context, "colour1"), "§9");
                                     bridgeC2 = bridgeC1;
                                     bridgeC3 = bridgeC1;
@@ -48,6 +52,7 @@ public final class BridgeColourCommand {
                                 .then(RequiredArgumentBuilder.<FabricClientCommandSource, String>argument("colour2", StringArgumentType.word())
                                         .suggests((context, builder) -> CommandSource.suggestMatching(VALID_COLORS, builder))
                                         .executes(context -> {
+                                            if (!requireHypixel(true)) return Command.SINGLE_SUCCESS;
                                             bridgeC1 = COLOR_CODE_MAP.getOrDefault(StringArgumentType.getString(context, "colour1"), "§9");
                                             bridgeC2 = COLOR_CODE_MAP.getOrDefault(StringArgumentType.getString(context, "colour2"), "§6");
                                             bridgeC3 = bridgeC2;
@@ -57,6 +62,7 @@ public final class BridgeColourCommand {
                                         .then(RequiredArgumentBuilder.<FabricClientCommandSource, String>argument("colour3", StringArgumentType.word())
                                                 .suggests((context, builder) -> CommandSource.suggestMatching(VALID_COLORS, builder))
                                                 .executes(context -> {
+                                                    if (!requireHypixel(true)) return Command.SINGLE_SUCCESS;
                                                     bridgeC1 = COLOR_CODE_MAP.getOrDefault(StringArgumentType.getString(context, "colour1"), "§9");
                                                     bridgeC2 = COLOR_CODE_MAP.getOrDefault(StringArgumentType.getString(context, "colour2"), "§6");
                                                     bridgeC3 = COLOR_CODE_MAP.getOrDefault(StringArgumentType.getString(context, "colour3"), "§f");

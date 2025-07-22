@@ -10,17 +10,19 @@ import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.arg
 import static ozmeyham.imsbridge.IMSBridge.combinedBridgeEnabled;
 import static ozmeyham.imsbridge.ImsWebSocketClient.wsClient;
 import static ozmeyham.imsbridge.utils.TextUtils.printToChat;
+import static ozmeyham.imsbridge.utils.JSONSanitization.sanitizeMessage;
 
 public class CombinedBridgeMsgCommand {
     public static void combinedBridgeMsgCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        dispatcher.register(LiteralArgumentBuilder.<FabricClientCommandSource>literal("bc")
+        dispatcher.register(LiteralArgumentBuilder.<FabricClientCommandSource>literal("cbc")
                 .then(argument("message", StringArgumentType.greedyString())
                         .executes(ctx -> {
                             String message = StringArgumentType.getString(ctx, "message");
                             if (combinedBridgeEnabled == false) {
                                 printToChat("§cYou need to enable cbridge messages before using cbridge! §6§oDo /cbridge toggle");
                             } else {
-                                wsClient.send("{\"from\":\"mc\",\"msg\":\"" + message + "\",\"combinedbridge\":true}");
+
+                                wsClient.send("{\"from\":\"mc\",\"msg\":\"" + sanitizeMessage(message) + "\",\"combinedbridge\":true}");
                             }
                             return Command.SINGLE_SUCCESS;
                         })

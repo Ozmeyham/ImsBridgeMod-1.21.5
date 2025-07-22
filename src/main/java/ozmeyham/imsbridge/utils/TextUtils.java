@@ -5,6 +5,8 @@ import net.minecraft.text.Text;
 
 import java.util.Set;
 
+import static ozmeyham.imsbridge.utils.JSONSanitization.sanitizeMessage;
+
 public class TextUtils {
     // Simple in-game chat print because the command is so long for some reason
     public static void printToChat(String msg) {
@@ -15,7 +17,7 @@ public class TextUtils {
 
     // Lightweight JSON string escaper
     public static String quote(String s) {
-        return "\"" + s.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
+        return "\"" + sanitizeMessage(s) + "\"";
     }
 
     public static Boolean isSkyblockChannelChange(String content) {

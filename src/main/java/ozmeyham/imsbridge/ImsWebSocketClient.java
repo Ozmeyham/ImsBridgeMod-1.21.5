@@ -2,7 +2,6 @@ package ozmeyham.imsbridge;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
-import net.minidev.json.JSONObject;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
@@ -34,6 +33,10 @@ public class ImsWebSocketClient extends WebSocketClient {
     public static void connectWebSocket() {
         if (wsClient == null || !wsClient.isOpen()) {
             // printToChat("§cConnecting to websocket...");
+            if (!onHypixel) {
+                printToChat("§cDue to security reasons, you have to be logged on Hypixel to connect to the IMS-Bridge server.");
+                return;
+            }
             try {
                 wsClient = new ImsWebSocketClient(new URI("wss://ims-bridge.com"));
                 wsClient.connect();
