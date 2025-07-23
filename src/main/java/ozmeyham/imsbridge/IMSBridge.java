@@ -69,9 +69,16 @@ public class IMSBridge implements ClientModInitializer {
 			if (!guide) {
 				guide = true;
 				saveConfigValue("guide", "true");
-				printToChat("Thank you for installing IMS's Bridge-Mod.\n§bAfter registering your bridge-key, please use /imshelp to get a list of all commands.");
+                try {
+                    Thread.sleep(1000);
+					if (!checkedforUpdate) {checkForUpdates();checkedforUpdate=true;}
+					printToChat("§aThank you for installing IMS's Bridge-Mod.\n§bAfter registering your bridge-key, please enter /bridge help to get a list of all commands.");
+                } catch (InterruptedException e) {
+					printToChat("§cAn error occured. Please send the following error to #bug-report "+e);
+                    throw new RuntimeException(e);
+                }
 			}
-			if (!checkedforUpdate) {checkForUpdates();checkedforUpdate=true;}
+
 		});
 	}
 }

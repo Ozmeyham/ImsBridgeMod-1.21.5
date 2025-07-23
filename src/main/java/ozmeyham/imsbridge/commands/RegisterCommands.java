@@ -12,7 +12,7 @@ import static ozmeyham.imsbridge.commands.CombinedBridgeColourCommand.combinedBr
 import static ozmeyham.imsbridge.commands.CombinedBridgeMsgCommand.combinedBridgeMsgCommand;
 import static ozmeyham.imsbridge.commands.CombinedBridgeOnlineCommand.*;
 import static ozmeyham.imsbridge.commands.CombinedBridgeToggleCommand.combinedBridgeToggleCommand;
-import static ozmeyham.imsbridge.commands.IMSHelpCommand.imsHelpCommand;
+import static ozmeyham.imsbridge.commands.BridgeHelpCommand.bridgeHelpCommand;
 
 public class RegisterCommands {
     public static void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher) {
@@ -26,6 +26,6 @@ public class RegisterCommands {
         combinedBridgeColourCommand(dispatcher);
         combinedBridgeOnlineCommand(dispatcher);
         combinedBridgeOnlineCommandShort(dispatcher);
-        imsHelpCommand(dispatcher);
+        bridgeHelpCommand(dispatcher);
     }
 }
