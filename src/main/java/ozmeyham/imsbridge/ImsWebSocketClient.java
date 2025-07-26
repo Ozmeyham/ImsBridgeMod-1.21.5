@@ -102,17 +102,23 @@ public class ImsWebSocketClient extends WebSocketClient {
         if (Objects.equals(getJsonValue(message, "request"), "getOnlinePlayers")) {
             JsonObject root = JsonParser.parseString(message).getAsJsonObject();
             JsonObject response = root.getAsJsonObject("response");
-            StringBuilder messageBuilder = new StringBuilder("§aOnline Players:\n");
+            int totalPlayers = 0;
+            for (String guild : response.keySet()) {
+                totalPlayers += response.getAsJsonArray(guild).size();
+            }
+            StringBuilder messageBuilder = new StringBuilder("§aOnline Players: §e" + totalPlayers + "\n");
             for (String guild : response.keySet()) {
                 JsonArray players = response.getAsJsonArray(guild);
-                messageBuilder.append(GUILD_COLOUR_MAP.get(guild)).append(guild).append(": ");
+                int count = players.size();
+
+                messageBuilder.append(GUILD_COLOUR_MAP.get(guild)).append(guild).append("§7: §e").append(count).append("\n");
 
                 if (players.isEmpty()) {
                     messageBuilder.append("§7None\n");
                 } else {
-                    for (int i = 0; i < players.size(); i++) {
+                    for (int i = 0; i < count; i++) {
                         messageBuilder.append("§f").append(players.get(i).getAsString());
-                        if (i < players.size() - 1) messageBuilder.append(", ");
+                        if (i < count - 1) messageBuilder.append(", ");
                     }
                     messageBuilder.append("\n");
                 }
@@ -150,7 +156,7 @@ public class ImsWebSocketClient extends WebSocketClient {
         LOGGER.info("WebSocket Closed: {}", reason);
 
         if ("Invalid bridge key".equals(reason)) {
-            printToChat("§4Disconnected from websocket: failed to authenticate bridge key. §6Use /bridgekey {key} to try again.");
+            printToChat("§4Disconnected from websocket: §cfailed to authenticate bridge key. §7Use §6/bridge key <key>§7 to try again.");
             LOGGER.warn("Not reconnecting due to invalid key.");
             return; // Don't attempt to reconnect
         }

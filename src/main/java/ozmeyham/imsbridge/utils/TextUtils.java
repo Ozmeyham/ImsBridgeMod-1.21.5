@@ -5,8 +5,6 @@ import net.minecraft.text.Text;
 
 import java.util.Set;
 
-import static ozmeyham.imsbridge.utils.JSONSanitization.sanitizeMessage;
-
 public class TextUtils {
     // Simple in-game chat print because the command is so long for some reason
     public static void printToChat(String msg) {
@@ -15,13 +13,17 @@ public class TextUtils {
         );
     }
 
+    public static String sanitizeMessage (String msg) {
+        return msg.replace("\"","''").replace("\\","\\\\");
+    }
+
     // Lightweight JSON string escaper
     public static String quote(String s) {
         return "\"" + sanitizeMessage(s) + "\"";
     }
 
     public static Boolean isSkyblockChannelChange(String content) {
-        Set<String> validMessages = Set.of("You must be in a party to join the party channel!",
+        Set<String> validMessages = Set.of(
                 "You're already in this channel!",
                 "You are now in the GUILD channel",
                 "You are now in the ALL channel",

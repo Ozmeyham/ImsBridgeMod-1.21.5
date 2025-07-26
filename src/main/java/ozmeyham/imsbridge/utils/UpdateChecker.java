@@ -45,7 +45,7 @@ public class UpdateChecker {
                 String currentVersion = getModVersion();
 
                 if (!latestVersion.equalsIgnoreCase(currentVersion)) {
-                    printToChat("§bUpdate available! Latest version: " + latestVersion +
+                    printToChat("§bUpdate available! §7Latest version: §b" + latestVersion +
                             "§e (You have §6" + currentVersion + "§e)");
                 }
 

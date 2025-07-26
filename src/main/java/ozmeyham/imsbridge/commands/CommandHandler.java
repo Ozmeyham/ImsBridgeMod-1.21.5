@@ -10,11 +10,12 @@ import static ozmeyham.imsbridge.commands.CombinedBridgeChatCommand.combinedBrid
 import static ozmeyham.imsbridge.commands.CombinedBridgeChatCommand.combinedBridgeChatCommandShort;
 import static ozmeyham.imsbridge.commands.CombinedBridgeColourCommand.combinedBridgeColourCommand;
 import static ozmeyham.imsbridge.commands.CombinedBridgeMsgCommand.combinedBridgeMsgCommand;
-import static ozmeyham.imsbridge.commands.CombinedBridgeOnlineCommand.*;
+import static ozmeyham.imsbridge.commands.BridgeOnlineCommand.*;
 import static ozmeyham.imsbridge.commands.CombinedBridgeToggleCommand.combinedBridgeToggleCommand;
 import static ozmeyham.imsbridge.commands.BridgeHelpCommand.bridgeHelpCommand;
+import static ozmeyham.imsbridge.commands.CombinedBridgeHelpCommand.*;
 
-public class RegisterCommands {
+public class CommandHandler {
     public static void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         bridgeKeyCommand(dispatcher);
         bridgeToggleCommand(dispatcher);
@@ -24,8 +25,9 @@ public class RegisterCommands {
         combinedBridgeChatCommandShort(dispatcher);
         combinedBridgeMsgCommand(dispatcher);
         combinedBridgeColourCommand(dispatcher);
-        combinedBridgeOnlineCommand(dispatcher);
-        combinedBridgeOnlineCommandShort(dispatcher);
+        bridgeOnlineCommand(dispatcher);
+        bridgeOnlineCommandShort(dispatcher);
         bridgeHelpCommand(dispatcher);
+        combinedBridgeHelpCommand(dispatcher);
     }
 }
