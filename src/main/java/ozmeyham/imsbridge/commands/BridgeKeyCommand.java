@@ -16,22 +16,25 @@ import static ozmeyham.imsbridge.utils.TextUtils.printToChat;
 
 public final class BridgeKeyCommand {
     public static void bridgeKeyCommand(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        dispatcher.register(LiteralArgumentBuilder.<FabricClientCommandSource>literal("bridgekey")
-                .then(RequiredArgumentBuilder.<FabricClientCommandSource, String>argument("key", StringArgumentType.word())
-                        .executes(ctx -> {
-                            String key = StringArgumentType.getString(ctx, "key");
-                            bridgeKey = key;
-                            if (isValidBridgeKey()) {
-                                saveConfigValue("bridgeKey", bridgeKey);
-                                loadConfig();
-                                LOGGER.info("Bridge key set to " + key);
-                                printToChat("§cBridge key saved as: §f" + bridgeKey);
-                                connectWebSocket();
-                            } else {
-                                printToChat("§cInvalid bridge key format! Check you pasted correctly.");
-                            }
-                            return Command.SINGLE_SUCCESS;
-                        })
-                ));
+        dispatcher.register(LiteralArgumentBuilder.<FabricClientCommandSource>literal("bridge")
+                .then(LiteralArgumentBuilder.<FabricClientCommandSource>literal("key")
+                        .then(RequiredArgumentBuilder.<FabricClientCommandSource, String>argument("key", StringArgumentType.word())
+                                .executes(ctx -> {
+                                    String key = StringArgumentType.getString(ctx, "key");
+                                    bridgeKey = key;
+                                    if (isValidBridgeKey()) {
+                                        saveConfigValue("bridgeKey", bridgeKey);
+                                        loadConfig();
+                                        LOGGER.info("Bridge key set to " + key);
+                                        printToChat("§cBridge key saved as: §f" + bridgeKey);
+                                        connectWebSocket();
+                                    } else {
+                                        printToChat("§cInvalid bridge key format! Check you pasted correctly.");
+                                    }
+                                    return Command.SINGLE_SUCCESS;
+                                })
+                        )
+                )
+        );
     }
 }

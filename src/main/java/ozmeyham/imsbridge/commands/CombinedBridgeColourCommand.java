@@ -34,7 +34,7 @@ public final class CombinedBridgeColourCommand {
                 .then(LiteralArgumentBuilder.<FabricClientCommandSource>literal("colour")
                         .executes(context -> {
                             cbridgeC1 = "§4"; cbridgeC2 = "§6"; cbridgeC3 = "§f";
-                            printToChat("§cReset cbridge colour format to default.");
+                            cbridgeColourFormat();
                             return 1;
                         })
                         .then(RequiredArgumentBuilder.<FabricClientCommandSource, String>argument("colour4", StringArgumentType.word())

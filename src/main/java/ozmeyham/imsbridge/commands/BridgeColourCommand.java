@@ -33,7 +33,7 @@ public final class BridgeColourCommand {
                 .then(LiteralArgumentBuilder.<FabricClientCommandSource>literal("colour")
                         .executes(context -> {
                             bridgeC1 = "§9"; bridgeC2 = "§6"; bridgeC3 = "§f";
-                            printToChat("§cReset bridge colour format to default.");
+                            bridgeColourFormat();
                             return 1;
                         })
                         .then(RequiredArgumentBuilder.<FabricClientCommandSource, String>argument("colour1", StringArgumentType.word())

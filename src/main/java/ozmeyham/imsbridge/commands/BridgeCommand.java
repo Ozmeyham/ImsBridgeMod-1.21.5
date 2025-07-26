@@ -21,7 +21,7 @@ public final class BridgeCommand {
                             } else {
                                 bridgeEnabled = true;
                                 saveConfigValue("bridgeEnabled", "true");
-                                printToChat("§2Enabled bridge messages!");
+                                printToChat("§aEnabled bridge messages!");
                             }
                             return Command.SINGLE_SUCCESS;
                         })

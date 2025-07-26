@@ -41,7 +41,7 @@ public class BridgeKeyUtils {
                     if (delayTicks > 0) {
                         delayTicks--;
                     } else if (!isValidBridgeKey()) {
-                        printToChat("§cBridge key not set. §6Use /key on discord to obtain a key, then run /bridgekey in-game and paste your key.");
+                        printToChat("§cBridge key not set. §7Use §6/key §7on discord to obtain a key, then run §6/bridge key §7in-game and paste your key.");
                         shouldCheckKey = false;
                     }
                 }

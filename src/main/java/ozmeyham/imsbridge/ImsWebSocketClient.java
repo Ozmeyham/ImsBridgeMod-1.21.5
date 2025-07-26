@@ -2,13 +2,14 @@ package ozmeyham.imsbridge;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
-import net.minidev.json.JSONObject;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
+import java.util.Objects;
+import com.google.gson.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -60,8 +61,8 @@ public class ImsWebSocketClient extends WebSocketClient {
         }
     }
 
-    private void cbridgeMessage(String chatMsg, String username, String guild) {
-        String colouredMsg = cbridgeC1 + "CBridge > " + cbridgeC2 + username + ": " + cbridgeC3 + chatMsg;
+    private void cbridgeMessage(String chatMsg, String username, String guild, String guildColour) {
+        String colouredMsg = cbridgeC1 + "CBridge > " + cbridgeC2 + username + guildColour + " [" + guild + "]§f: " + cbridgeC3 + chatMsg;
         // Send formatted message in client chat
         if (combinedBridgeEnabled == true) {
             MinecraftClient.getInstance().execute(() ->
@@ -73,16 +74,56 @@ public class ImsWebSocketClient extends WebSocketClient {
     @Override
     public void onMessage(String message) {
         //printToChat(message);
-        String msg = getJsonValue(message, "msg");
-        String[] split = msg.split(": ", 2);
-        String username = split.length > 0 ? split[0] : "";
-        String chatMsg = split.length > 1 ? split[1] : "";
-        String guild = GUILD_MAP.get(getJsonValue(message, "guild"));
+        if (getJsonValue(message, "response") != null) {
+            handleResponse(message);
+        } else if (getJsonValue(message, "from") != null) {
+            String msg = getJsonValue(message, "msg");
 
-        if (message.contains("\"combinedbridge\":true")){
-            cbridgeMessage(chatMsg, username, guild);
-        } else if (message.contains("\"from\":\"discord\"")){
-            bridgeMessage(chatMsg, username, guild);
+            String[] split = msg.split(": ", 2);
+            String username = split.length > 0 ? split[0] : "";
+            String chatMsg = split.length > 1 ? split[1] : "";
+            String guild = GUILD_MAP.get(getJsonValue(message, "guild"));
+            String guildColour = GUILD_COLOUR_MAP.get(getJsonValue(message, "guild"));
+
+            if (message.contains("\"combinedbridge\":true")){
+                if (message.contains("\"from\":\"discord\"")) {
+                    guild = "DISC";
+                    guildColour = "§9";
+                }
+                cbridgeMessage(chatMsg, username, guild, guildColour);
+            } else if (message.contains("\"from\":\"discord\"")){
+                bridgeMessage(chatMsg, username, guild);
+            }
+        }
+
+    }
+
+    private void handleResponse(String message) {
+        if (Objects.equals(getJsonValue(message, "request"), "getOnlinePlayers")) {
+            JsonObject root = JsonParser.parseString(message).getAsJsonObject();
+            JsonObject response = root.getAsJsonObject("response");
+            int totalPlayers = 0;
+            for (String guild : response.keySet()) {
+                totalPlayers += response.getAsJsonArray(guild).size();
+            }
+            StringBuilder messageBuilder = new StringBuilder("§aOnline Players: §e" + totalPlayers + "\n");
+            for (String guild : response.keySet()) {
+                JsonArray players = response.getAsJsonArray(guild);
+                int count = players.size();
+
+                messageBuilder.append(GUILD_COLOUR_MAP.get(guild)).append(guild).append("§7: §e").append(count).append("\n");
+
+                if (players.isEmpty()) {
+                    messageBuilder.append("§7None\n");
+                } else {
+                    for (int i = 0; i < count; i++) {
+                        messageBuilder.append("§f").append(players.get(i).getAsString());
+                        if (i < count - 1) messageBuilder.append(", ");
+                    }
+                    messageBuilder.append("\n");
+                }
+            }
+            printToChat(messageBuilder.toString());
         }
     }
 
@@ -104,12 +145,18 @@ public class ImsWebSocketClient extends WebSocketClient {
             Map.entry("Ironman Academy", "IMA")
     );
 
+    public static final Map<String, String> GUILD_COLOUR_MAP = Map.ofEntries(
+            Map.entry("Ironman Sweats", "§a"),
+            Map.entry("Ironman Casuals", "§3"),
+            Map.entry("Ironman Academy", "§2")
+    );
+
     @Override
     public void onClose(int code, String reason, boolean remote) {
         LOGGER.info("WebSocket Closed: {}", reason);
 
         if ("Invalid bridge key".equals(reason)) {
-            printToChat("§4Disconnected from websocket: failed to authenticate bridge key. §6Use /bridgekey {key} to try again.");
+            printToChat("§4Disconnected from websocket: §cfailed to authenticate bridge key. §7Use §6/bridge key <key>§7 to try again.");
             LOGGER.warn("Not reconnecting due to invalid key.");
             return; // Don't attempt to reconnect
         }
